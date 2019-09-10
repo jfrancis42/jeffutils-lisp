@@ -26,9 +26,10 @@ times when doing API stuff."
   "Return n as a string (empty string if n is nil)."
   (if n (format nil "~A" n) ""))
 
-(defun quotes-if-null (thing)
-  "If thing is non-null, return it, else return an empty string."
-  (if thing thing ""))
+(defun quotes-if-null (thing &optional (filler ""))
+  "If thing is non-null, return it, else return an empty string (or
+the optional filler)."
+  (if thing thing filler))
 
 (defun join (stuff separator)
   "Join a list of strings with a separator (like ruby string.join())."
@@ -67,5 +68,42 @@ element order varies."
   "Parse a float from a string."
   (with-input-from-string (in float) (read in)))
 
+(defmacro file-each-line (file body)
+  `(with-open-file (stream-in ,file :direction :input)
+     (do ((line (read-line stream-in nil)
+		(read-line stream-in nil)))
+	 ((null line))
+       ,body)))
+
 ;; (drakma:url-encode thing :utf-8) ; encode space as "+"
 ;; (quri:url-encode thing) ; encode space as "%20"
+
+(defun :hex (value)
+  (write-to-string value :base 16))
+
+(defun :binary (value)
+  (write-to-string value :base 2))
+
+;;(defun :hex (value &optional (size 4))
+;;  (format t "~v,'0X" size value))
+
+;;(defun :bits (value &optional (size 8))
+;;  (format t "~v,'0B" size value))
+
+;; read file as unsigned 8-bit bytes, then convert to string and return
+;; (let ((data (make-array 1024 :initial-element 0 :element-type '(unsigned-byte 8))) (s (open "/etc/passwd" :element-type '(unsigned-byte 8)))) (read-sequence data s) (close s) (babel:octets-to-string data))
+
+;; from (on lisp)
+(defun memoize (fn)
+  (let ((cache (make-hash-table :test #'equal)))
+    #'(lambda (&rest args)
+	(multiple-value-bind (val win) (gethash args cache)
+	  (if win
+	      val
+	      (setf (gethash args cache)
+		    (apply fn args)))))))
+
+;;; Local Variables:
+;;; mode: Lisp
+;;; coding: utf-8
+;;; End:

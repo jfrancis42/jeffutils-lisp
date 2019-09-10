@@ -12,4 +12,8 @@
 	   :join
 	   :english-join
 	   :parse-float
-	   :equal-lists))
+	   :file-each-line
+	   :hex
+	   :binary
+	   :equal-lists
+	   :memoize))
