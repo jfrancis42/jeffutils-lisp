@@ -6,5 +6,6 @@
   :license  "MIT, see file LICENSE"
   :version "0.0.1"
   :serial t
+  :depends-on (#:alexandria)
   :components ((:file "package")
                (:file "jeffutils")))
