@@ -11,6 +11,7 @@
 	   :number-list
 	   :remove-duplicate-strings
 	   :file-string
+	   :string-file
 	   :as-string
 	   :quotes-if-null
 	   :join
@@ -24,9 +25,17 @@
 	   :replace-all
 	   :histogram
 	   :remove-string
-	   :replace-all
 	   :memoize
 	   :collapse-blob-list
 	   :exclude-from-blobs
 	   :matrix-multiply
+	   :queue
+	   :queue-items
+	   :queue-tail
+	   :make-queue
+	   :enqueue
+	   :dequeue
+	   :queue-empty-p
+	   :all-true
+	   :any-true
 	   ))

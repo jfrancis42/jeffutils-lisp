@@ -2,6 +2,15 @@
 
 (in-package #:jeffutils)
 
+(defun all-true (thing)
+  (let ((tmp (remove-duplicates thing :test #'equal)))
+    (when (and (first tmp)
+	       (= 1 (length tmp)))
+      t)))
+
+(defun any-true (thing)
+  (not (not (member t thing))))
+
 (defun clean-string (string)
   "Remove random stray stuff from the beginning and end of a string."
   (string-trim
@@ -47,6 +56,13 @@ times when doing API stuff."
     (let ((data (make-string (file-length stream))))
       (read-sequence data stream)
       data)))
+
+(defun string-file (name content)
+  (with-open-file (stream name
+			  :direction :output
+			  :if-exists :overwrite
+			  :if-does-not-exist :create)
+    (format stream content)))
 
 (defun as-string (n)
   "Return n as a string (empty string if n is nil)."
@@ -180,22 +196,6 @@ but good enough for occasional interactive use."
                      (subseq full-string 0 subst-point)
                      (subseq full-string (+ subst-point (length rem-string))))
         full-string)))
-
-;; http://cl-cookbook.sourceforge.net/strings.html
-(defun replace-all (string part replacement &key (test #'char=))
-  "Returns a new string in which all the occurences of the part 
-is replaced with replacement."
-  (with-output-to-string (out)
-    (loop with part-length = (length part)
-       for old-pos = 0 then (+ pos part-length)
-       for pos = (search part string
-                         :start2 old-pos
-                         :test test)
-       do (write-string string out
-                        :start old-pos
-                        :end (or pos (length string)))
-       when pos do (write-string replacement out)
-       while pos)))
 
 ;; -=-=-=-=-=-=-=-
 
@@ -379,6 +379,38 @@ lists. Example: (collapse-blob-list (list (list 10 20) (list 25)))
                         collect (apply #'+ (mapcar #'* (row a row) (col b col)))))))
 
 ;; -=-=-=-=-=-=-=-
+
+;; -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+;; from https://rosettacode.org/wiki/Queue/Definition#Common_Lisp
+
+(defstruct (queue (:constructor %make-queue))
+  (items '() :type list)
+  (tail '() :type list))
+ 
+(defun make-queue ()
+  "Returns an empty queue."
+  (%make-queue))
+ 
+(defun queue-empty-p (queue)
+  "Returns true if the queue is empty."
+  (endp (queue-items queue)))
+ 
+(defun enqueue (item queue)
+  "Enqueue item in queue. Returns the queue."
+  (prog1 queue
+    (if (queue-empty-p queue)
+      (setf (queue-items queue) (list item)
+            (queue-tail queue) (queue-items queue))
+      (setf (cdr (queue-tail queue)) (list item)
+            (queue-tail queue) (cdr (queue-tail queue))))))
+ 
+(defun dequeue (queue)
+  "Dequeues an item from queue. Signals an error if queue is empty."
+  (if (queue-empty-p queue)
+    (error "Cannot dequeue from empty queue.")
+    (pop (queue-items queue))))
+
+;; -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 ;;; Local Variables:
 ;;; mode: Lisp
