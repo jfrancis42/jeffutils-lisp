@@ -3,13 +3,16 @@
 (in-package #:jeffutils)
 
 (defun all-true (thing)
-  (let ((tmp (remove-duplicates thing :test #'equal)))
+  (let ((tmp (remove-duplicates (mapcar (lambda (n) (not (not n))) thing) :test #'equal)))
     (when (and (first tmp)
 	       (= 1 (length tmp)))
       t)))
 
+(defun all-false (thing)
+  (all-true (mapcar #'null thing)))
+
 (defun any-true (thing)
-  (not (not (member t thing))))
+  (not (not (member t (mapcar (lambda (a) (not (not a))) thing)))))
 
 (defun clean-string (string)
   "Remove random stray stuff from the beginning and end of a string."
@@ -58,6 +61,8 @@ times when doing API stuff."
       data)))
 
 (defun string-file (name content)
+  "Write the given content to the named file, overwriting if it already
+exists."
   (with-open-file (stream name
 			  :direction :output
 			  :if-exists :overwrite
@@ -83,7 +88,7 @@ the optional filler)."
 (defun english-join (stuff)
   "Join a list of items like you'd do it in English (ie, 'one, two,
 and three')."
-  (let ((most (mapcar (lambda (a) (format nil "~A" a)) (rest (reverse stuff))))
+  (let ((most (mapcar (lambda (a) (format nil "~A" a)) (reverse (rest (reverse stuff)))))
 	(final (format nil "~A" (first (reverse stuff))))
 	(len (length stuff)))
     (cond
@@ -368,8 +373,8 @@ lists. Example: (collapse-blob-list (list (list 10 20) (list 25)))
       blobs))
 
 ;; -=-=-=-=-=-=-=-
-
 ;; https://rosettacode.org/wiki/Matrix_multiplication#Common_Lisp
+
 ;; (jeff:matrix-multiply '((1 2) (3 4)) '((-3 -8 3) (-2 1 4)))
 (defun matrix-multiply (a b)
   (flet ((col (mat i) (mapcar #'(lambda (row) (elt row i)) mat))
@@ -377,8 +382,6 @@ lists. Example: (collapse-blob-list (list (list 10 20) (list 25)))
     (loop for row from 0 below (length a)
           collect (loop for col from 0 below (length (row b 0))
                         collect (apply #'+ (mapcar #'* (row a row) (col b col)))))))
-
-;; -=-=-=-=-=-=-=-
 
 ;; -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 ;; from https://rosettacode.org/wiki/Queue/Definition#Common_Lisp
@@ -411,6 +414,164 @@ lists. Example: (collapse-blob-list (list (list 10 20) (list 25)))
     (pop (queue-items queue))))
 
 ;; -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+;; Modified from https://stackoverflow.com/questions/71846244/return-the-longest-sequence-of-consecutive-numbers-from-list-in-lisp
+
+(defun group-consecutives-work (l &optional (acc '()))
+  (cond ((null l) (nreverse acc))
+        ((and acc (= 1 (- (car l) (caar acc)))) (group-consecutives-work (cdr l) (cons (cons (car l) (car acc)) (cdr acc))))
+        (t (group-consecutives-work (cdr l) (cons (list (car l)) (when acc (cons (nreverse (car acc)) (cdr acc))))))))
+
+(defun group-consecutives (stuff)
+  "Given a list of integers, this function sorts them, then groups them
+into sublists with the lowest and highest number in the sequence as
+the car and cadr. For example, '(1 2 3 4 7 9 10) becomes '((1 4) (7
+7) (9 10))."
+  (mapcar
+   (lambda (n)
+     (list (first n) (first (last n))))
+   (mapcar
+    (lambda (n)
+      (sort n (lambda (a b) (< a b))))
+    (group-consecutives-work
+     (sort (remove-duplicates stuff :test #'=)  (lambda (a b) (< a b)))))))
+
+;; -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+(defun dot-graph (fname data)
+  "Writes a graph dot file for graphviz. Requires a filename and a list
+of lists containing data to be graphed. Each sublist contains two
+mandatory items (the source and the destination) as well as an
+optional third item (the label for the line). Example data:
+(list
+ (list :a :b)
+ (list :c :d))"
+  (with-open-file (graph fname
+			 :direction :output
+			 :if-exists :supersede
+			 :if-does-not-exist :create)
+    (format graph "graph {~%")
+    (mapcar
+     (lambda (n)
+       (format graph "  \"~A\" -- \"~A\"~A;~%"
+	       (nth 0 n)
+	       (nth 1 n)
+	       (if (nth 2 n)
+		   (format nil " [label=\"~A\"]" (nth 2 n))
+		   "")))
+     data)
+    (format graph "}~%")))
+
+(defun dot-digraph (fname data)
+  "Writes a digraph dot file for graphviz. Requires a filename and a list
+of lists containing data to be graphed. Each sublist contains two
+mandatory items (the source and the destination) as well as an
+optional third item (the label for the line). Example data:
+(list
+ (list :a :b)
+ (list :c :d))"
+  (with-open-file (graph fname
+			 :direction :output
+			 :if-exists :supersede
+			 :if-does-not-exist :create)
+    (format graph "digraph {~%")
+    (mapcar
+     (lambda (n)
+       (format graph "  \"~A\" -> \"~A\"~A;~%"
+	       (nth 0 n)
+	       (nth 1 n)
+	       (if (nth 2 n)
+		   (format nil " [label=\"~A\"]" (nth 2 n))
+		   "")))
+     data)
+    (format graph "}~%")))
+
+;; https://stackoverflow.com/questions/65304891/how-to-do-a-while-loop-in-common-lisp
+
+(defmacro while (test &body decls/tags/forms)
+  `(do () ((not ,test) (values))
+     ,@decls/tags/forms))
+
+;; start temperature-related stuff -----
+
+(defun c2f (temp-c)
+  (+ 32 (* temp-c (/ 9 5))))
+
+(defun f2c (temp-f)
+  (* (- temp-f 32) (/ 5 9)))
+
+(defun c2k (temp-c)
+  (+ temp-c 273.15))
+
+(defun f2k (temp-f)
+  (c2k (f2c temp-f)))
+
+;; end temperature-related stuff -----
+
+;; start radio-related stuff -----
+
+(defun watts2dbm (watts)
+  (* 10 (log (* watts 1000) 10)))
+
+(defun dbm2watts (dbm)
+  (/ (expt 10 (/ dbm 10)) 1000))
+
+(defun dipole-in-ft (fmhz)
+  (/ 468 fmhz))
+
+(defun calc-db (watts-out watts-in)
+  (* 10 (log (/ watts-out watts-in) 10)))
+
+(defun calc-watts (watts-in db)
+  (* watts-in (expt 10 (/ db 10))))
+
+;; end radio-related stuff -----
+
+;; start electronics-related stuff -----
+
+(defun vpeak2vrms (v-peak)
+  (* (/ 1 (sqrt 2)) v-peak))
+
+(defun vrms2vpeak (v-rms)
+  (* (sqrt 2) v-rms))
+
+(defun vrms2watts (v-rms)
+  (/ (* v-rms v-rms) 50))
+
+(defun watts2vrms (watts)
+  (* 5 (sqrt 2) (sqrt watts)))
+
+(defun vpeak2watts (v-peak)
+  (/ (* v-peak v-peak) 100))
+
+(defun watts2vpeak (watts)
+  (* 10 (sqrt watts)))
+
+(defun vpkpk2watts (v-pkpk)
+  (/ (* v-pkpk v-pkpk) 400))
+
+(defun watts2vpkpk (watts)
+  (* 20 (sqrt watts)))
+
+;; end electronics-related stuff -----
+
+;; -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+;; from https://www.perlmonks.org/?node_id=485066
+
+(defun permutations (bag)
+  "Return a list of all the permutations of the input."
+  ;; If the input is nil, there is only one permutation:
+  ;; nil itself
+  (if (null bag) 
+      '(())
+      ;; Otherwise, take an element, e, out of the bag.
+      ;; Generate all permutations of the remaining elements,
+      ;; And add e to the front of each of these.
+      ;; Do this for all possible e to generate all permutations.
+      (mapcan #'(lambda (e)
+                  (mapcar #'(lambda (p) (cons e p))
+                          (permutations
+                           (remove e bag :count 1))))
+              bag)))
 
 ;;; Local Variables:
 ;;; mode: Lisp
