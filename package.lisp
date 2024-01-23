@@ -43,22 +43,9 @@
 	   :dot-digraph
 	   :dot-graph
 	   :while
-	   :dbm2watts
-	   :watts2dbm
-	   :dipole-in-ft
-	   :calc-db
-	   :calc-watts
-	   :c2f
-	   :f2c
-	   :c2k
-	   :f2k
-	   :vpeak2vrms
-	   :vrms2watts
-	   :vpeak2watts
-	   :vpkpk2watts
-	   :vrms2vpeak
-	   :watts2vrms
-	   :watts2vpeak
-	   :watts2vpkpk
+	   :c-to-f
+	   :f-to-c
+	   :c-to-k
+	   :f-to-k
 	   :permutations
 	   ))

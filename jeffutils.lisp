@@ -493,66 +493,19 @@ optional third item (the label for the line). Example data:
 
 ;; start temperature-related stuff -----
 
-(defun c2f (temp-c)
+(defun c-to-f (temp-c)
   (+ 32 (* temp-c (/ 9 5))))
 
-(defun f2c (temp-f)
+(defun f-to-c (temp-f)
   (* (- temp-f 32) (/ 5 9)))
 
-(defun c2k (temp-c)
+(defun c-to-k (temp-c)
   (+ temp-c 273.15))
 
-(defun f2k (temp-f)
-  (c2k (f2c temp-f)))
+(defun f-to-k (temp-f)
+  (c-to-k (f-to-c temp-f)))
 
 ;; end temperature-related stuff -----
-
-;; start radio-related stuff -----
-
-(defun watts2dbm (watts)
-  (* 10 (log (* watts 1000) 10)))
-
-(defun dbm2watts (dbm)
-  (/ (expt 10 (/ dbm 10)) 1000))
-
-(defun dipole-in-ft (fmhz)
-  (/ 468 fmhz))
-
-(defun calc-db (watts-out watts-in)
-  (* 10 (log (/ watts-out watts-in) 10)))
-
-(defun calc-watts (watts-in db)
-  (* watts-in (expt 10 (/ db 10))))
-
-;; end radio-related stuff -----
-
-;; start electronics-related stuff -----
-
-(defun vpeak2vrms (v-peak)
-  (* (/ 1 (sqrt 2)) v-peak))
-
-(defun vrms2vpeak (v-rms)
-  (* (sqrt 2) v-rms))
-
-(defun vrms2watts (v-rms)
-  (/ (* v-rms v-rms) 50))
-
-(defun watts2vrms (watts)
-  (* 5 (sqrt 2) (sqrt watts)))
-
-(defun vpeak2watts (v-peak)
-  (/ (* v-peak v-peak) 100))
-
-(defun watts2vpeak (watts)
-  (* 10 (sqrt watts)))
-
-(defun vpkpk2watts (v-pkpk)
-  (/ (* v-pkpk v-pkpk) 400))
-
-(defun watts2vpkpk (watts)
-  (* 20 (sqrt watts)))
-
-;; end electronics-related stuff -----
 
 ;; -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 ;; from https://www.perlmonks.org/?node_id=485066

@@ -1,9 +1,4 @@
 # jeffutils
-### _Your Name <your.name@example.com>_
 
-This is a project to do ... something.
-
-## License
-
-Specify license here
-
+A bunch of handly utilities I find useful, many collected from books
+and web pages.
