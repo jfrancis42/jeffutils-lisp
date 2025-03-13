@@ -4,6 +4,7 @@
   (:nicknames :jeff)
   (:use #:cl)
   (:export :cdr-assoc
+	   :alpha-sort
 	   :clean-string
 	   :string-or-nil
 	   :float-or-nil
@@ -48,4 +49,6 @@
 	   :c-to-k
 	   :f-to-k
 	   :permutations
+	   :combinations
+	   :closest
 	   ))

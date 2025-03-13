@@ -40,6 +40,12 @@ as an integer and return the integer."
       nil
       (parse-integer thing)))
 
+(defun alpha-sort (thing &optional (reverse nil))
+  "Alphabetically sort a list."
+  (if reverse
+      (reverse (sort thing (lambda (a b) (string-lessp a b))))
+      (sort thing (lambda (a b) (string-lessp a b)))))
+
 (defmacro cdr-assoc (name alist)
   "Replaces '(cdr (assoc name alist))' because it's used a bajillion
 times when doing API stuff."
@@ -374,6 +380,18 @@ lists. Example: (collapse-blob-list (list (list 10 20) (list 25)))
 
 ;; -=-=-=-=-=-=-=-
 ;; https://rosettacode.org/wiki/Matrix_multiplication#Common_Lisp
+(defun combinations (&rest lists)
+  (if (endp lists)
+      (list nil)
+      (mapcan (lambda (inner-val)
+		(mapcar (lambda (outer-val)
+			  (cons outer-val
+				inner-val))
+			(car lists)))
+	      (apply #'combinations (cdr lists)))))
+
+;; -=-=-=-=-=-=-=-
+;; https://rosettacode.org/wiki/Matrix_multiplication#Common_Lisp
 
 ;; (jeff:matrix-multiply '((1 2) (3 4)) '((-3 -8 3) (-2 1 4)))
 (defun matrix-multiply (a b)
@@ -412,6 +430,11 @@ lists. Example: (collapse-blob-list (list (list 10 20) (list 25)))
   (if (queue-empty-p queue)
     (error "Cannot dequeue from empty queue.")
     (pop (queue-items queue))))
+
+(defun closest (stuff target)
+  "Given a list of stuff (numbers), returns the value closest to the target."
+  (sort stuff
+	(lambda (a b) (< (abs (- a target)) (abs (- b target))))))
 
 ;; -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 ;; Modified from https://stackoverflow.com/questions/71846244/return-the-longest-sequence-of-consecutive-numbers-from-list-in-lisp
@@ -525,6 +548,19 @@ optional third item (the label for the line). Example data:
                           (permutations
                            (remove e bag :count 1))))
               bag)))
+
+;; -=-=-=-=-=-=-=-
+;; https://stackoverflow.com/questions/18675913/lisp-how-to-get-all-possible-combinations-of-the-elements-from-lists-contained
+(defun combinations (&rest lists)
+  "Return a list of all the combinations of the input."
+  (if (endp lists)
+      (list nil)
+      (mapcan (lambda (inner-val)
+		(mapcar (lambda (outer-val)
+			  (cons outer-val
+				inner-val))
+			(car lists)))
+	      (apply #'combinations (cdr lists)))))
 
 ;;; Local Variables:
 ;;; mode: Lisp
