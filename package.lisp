@@ -51,4 +51,5 @@
 	   :permutations
 	   :combinations
 	   :closest
+	   :slad
 	   ))

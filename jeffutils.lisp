@@ -562,6 +562,14 @@ optional third item (the label for the line). Example data:
 			(car lists)))
 	      (apply #'combinations (cdr lists)))))
 
+(defun slad (fname run-function)
+  "run-function is of the form #'function"
+  (sb-ext:save-lisp-and-die fname
+			    :toplevel run-function
+			    :executable t
+			    :purify t
+			    :compression 9))
+
 ;;; Local Variables:
 ;;; mode: Lisp
 ;;; coding: utf-8
