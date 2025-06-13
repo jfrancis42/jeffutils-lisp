@@ -158,7 +158,7 @@ element order varies."
 
 ;; from http://cl-cookbook.sourceforge.net/strings.html
 (defun replace-all (string part replacement &key (test #'char=))
-  "Returns a new string in which all the occurences of the part 
+  "Returns a new string in which all the occurences of the part
 is replaced with replacement."
   (with-output-to-string (out)
     (loop with part-length = (length part)
@@ -170,7 +170,7 @@ is replaced with replacement."
                         :start old-pos
                         :end (or pos (length string)))
        when pos do (write-string replacement out)
-       while pos))) 
+       while pos)))
 
 (defun histogram (data &optional (at-least 0))
   "Generates a histogram of a list of values. Horribly inefficient,
@@ -197,7 +197,7 @@ but good enough for occasional interactive use."
 (defun remove-string (rem-string full-string &key from-end (test #'eql)
 					       test-not (start1 0) end1 (start2 0) end2 key)
   "returns full-string with rem-string removed"
-  (let ((subst-point (search rem-string full-string 
+  (let ((subst-point (search rem-string full-string
                              :from-end from-end
                              :test test :test-not test-not
                              :start1 start1 :end1 end1
@@ -282,9 +282,9 @@ but good enough for occasional interactive use."
 	 (merged (merge-two-work (list low-one high-one) (list low-two high-two))))
     (mapcar
      (lambda (p)
-       (if (= (first p) (second p))
-	   (list (first p))
-	   (list (first p) (second p))))
+;       (if (= (first p) (second p))
+;	   (list (first p))
+	   (list (first p) (second p)));)
      merged)))
 
 (defun sort-blobs (blobs)
@@ -315,7 +315,7 @@ but good enough for occasional interactive use."
 	(when (= 2 (length tmp))
 	  (push (second tmp) collapsed))
 	(sort-blobs collapsed))))
-	     
+
 (defun collapse-blob-list (blob-list)
   "Takes a list of lists of integers (where each sublist contains a
 lower and a higher integer) and collapses it into a list of lists of
@@ -407,15 +407,15 @@ lists. Example: (collapse-blob-list (list (list 10 20) (list 25)))
 (defstruct (queue (:constructor %make-queue))
   (items '() :type list)
   (tail '() :type list))
- 
+
 (defun make-queue ()
   "Returns an empty queue."
   (%make-queue))
- 
+
 (defun queue-empty-p (queue)
   "Returns true if the queue is empty."
   (endp (queue-items queue)))
- 
+
 (defun enqueue (item queue)
   "Enqueue item in queue. Returns the queue."
   (prog1 queue
@@ -424,7 +424,7 @@ lists. Example: (collapse-blob-list (list (list 10 20) (list 25)))
             (queue-tail queue) (queue-items queue))
       (setf (cdr (queue-tail queue)) (list item)
             (queue-tail queue) (cdr (queue-tail queue))))))
- 
+
 (defun dequeue (queue)
   "Dequeues an item from queue. Signals an error if queue is empty."
   (if (queue-empty-p queue)
@@ -569,6 +569,12 @@ optional third item (the label for the line). Example data:
 			    :executable t
 			    :purify t
 			    :compression 9))
+
+(defun random-length-string (length)
+  "Generate a random string of LENGTH ASCII letters (a-z)."
+  (let ((letters "abcdefghijklmnopqrstuvwxyz"))
+    (map-into (make-string length)
+              (lambda () (char letters (random (length letters)))))))
 
 ;;; Local Variables:
 ;;; mode: Lisp

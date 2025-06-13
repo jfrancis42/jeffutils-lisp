@@ -52,4 +52,5 @@
 	   :combinations
 	   :closest
 	   :slad
+	   :random-length-string
 	   ))
