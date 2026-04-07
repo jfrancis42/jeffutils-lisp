@@ -19,7 +19,6 @@
 	   :english-join
 	   :parse-float
 	   :file-each-line
-	   :line
 	   :hex
 	   :binary
 	   :equal-lists
@@ -53,4 +52,5 @@
 	   :closest
 	   :slad
 	   :random-length-string
+	   :string-to-keyword
 	   ))

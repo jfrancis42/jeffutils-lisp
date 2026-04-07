@@ -3,15 +3,18 @@
 (in-package #:jeffutils)
 
 (defun all-true (thing)
+  "Return t if all elements of list THING are non-nil, else nil."
   (let ((tmp (remove-duplicates (mapcar (lambda (n) (not (not n))) thing) :test #'equal)))
     (when (and (first tmp)
 	       (= 1 (length tmp)))
       t)))
 
 (defun all-false (thing)
+  "Return t if all elements of list THING are nil, else nil."
   (all-true (mapcar #'null thing)))
 
 (defun any-true (thing)
+  "Return t if any element of list THING is non-nil, else nil."
   (not (not (member t (mapcar (lambda (a) (not (not a))) thing)))))
 
 (defun clean-string (string)
@@ -27,16 +30,18 @@
       thing))
 
 (defun float-or-nil (thing)
-  "If thing is an empty string, return nil, otherwise parse the string
-as a float and return the float."
-  (if (equal "" thing)
+  "If thing is nil or an empty string, return nil, otherwise parse the
+string as a float and return the float."
+  (if (or (equal "" thing)
+	  (null thing))
       nil
       (parse-float thing)))
 
 (defun int-or-nil (thing)
   "If thing is an empty string, return nil, otherwise parse the string
 as an integer and return the integer."
-  (if (equal "" thing)
+  (if (or (equal "" thing)
+	  (null thing))
       nil
       (parse-integer thing)))
 
@@ -128,23 +133,13 @@ element order varies."
 	 ((null line))
        ,body)))
 
-;; (drakma:url-encode thing :utf-8) ; encode space as "+"
-;; (quri:url-encode thing) ; encode space as "%20"
-
-(defun :hex (value)
+(defun hex (value)
+  "Return value as a hexadecimal string."
   (write-to-string value :base 16))
 
-(defun :binary (value)
+(defun binary (value)
+  "Return value as a binary string."
   (write-to-string value :base 2))
-
-;;(defun :hex (value &optional (size 4))
-;;  (format t "~v,'0X" size value))
-
-;;(defun :bits (value &optional (size 8))
-;;  (format t "~v,'0B" size value))
-
-;; read file as unsigned 8-bit bytes, then convert to string and return
-;; (let ((data (make-array 1024 :initial-element 0 :element-type '(unsigned-byte 8))) (s (open "/etc/passwd" :element-type '(unsigned-byte 8)))) (read-sequence data s) (close s) (babel:octets-to-string data))
 
 ;; from (on lisp)
 (defun memoize (fn)
@@ -258,8 +253,8 @@ but good enough for occasional interactive use."
 	    (<= (first range-1) (second range-2)))
        (setf flag 10)
        (setf ret (list (first range-2) (second range-1))))
-      ((< (second range-1) (first range-2))
-       (>= (second range-1) (second range-2))
+      ((and (< (second range-1) (first range-2))
+	    (>= (second range-1) (second range-2)))
        (setf flag 11)
        (setf ret (list range-1 range-2)))
       ((< (second range-2) (first range-1))
@@ -282,9 +277,7 @@ but good enough for occasional interactive use."
 	 (merged (merge-two-work (list low-one high-one) (list low-two high-two))))
     (mapcar
      (lambda (p)
-;       (if (= (first p) (second p))
-;	   (list (first p))
-	   (list (first p) (second p)));)
+       (list (first p) (second p)))
      merged)))
 
 (defun sort-blobs (blobs)
@@ -325,7 +318,7 @@ lists. Example: (collapse-blob-list (list (list 10 20) (list 25)))
   (let ((blobs (collapse-blob-list-work (copy-list blob-list))))
     (loop while (not (equal blobs (collapse-blob-list-work blobs)))
 	 do
-	 (setf blobs (collapse-blob-list-work blob-list)))
+	 (setf blobs (collapse-blob-list-work blobs)))
     blobs))
 
 (defun exclude-blob (blobs-arg die-arg)
@@ -335,7 +328,6 @@ lists. Example: (collapse-blob-list (list (list 10 20) (list 25)))
     (mapcar
      (lambda (b)
        (setf blob (if (= 2 (length b)) b (list (first b) (first b))))
-       ;; A few of these could be combined with <=/>=... TODO
        (cond
 	 ((< (second die) (first blob))
 	  (push blob result))
@@ -377,21 +369,6 @@ lists. Example: (collapse-blob-list (list (list 10 20) (list 25)))
   (if exclusions
       (exclude-from-blobs (exclude-blob blobs (first exclusions)) (rest exclusions))
       blobs))
-
-;; -=-=-=-=-=-=-=-
-;; https://rosettacode.org/wiki/Matrix_multiplication#Common_Lisp
-(defun combinations (&rest lists)
-  (if (endp lists)
-      (list nil)
-      (mapcan (lambda (inner-val)
-		(mapcar (lambda (outer-val)
-			  (cons outer-val
-				inner-val))
-			(car lists)))
-	      (apply #'combinations (cdr lists)))))
-
-;; -=-=-=-=-=-=-=-
-;; https://rosettacode.org/wiki/Matrix_multiplication#Common_Lisp
 
 ;; (jeff:matrix-multiply '((1 2) (3 4)) '((-3 -8 3) (-2 1 4)))
 (defun matrix-multiply (a b)
@@ -517,15 +494,19 @@ optional third item (the label for the line). Example data:
 ;; start temperature-related stuff -----
 
 (defun c-to-f (temp-c)
+  "Convert Celsius to Fahrenheit."
   (+ 32 (* temp-c (/ 9 5))))
 
 (defun f-to-c (temp-f)
+  "Convert Fahrenheit to Celsius."
   (* (- temp-f 32) (/ 5 9)))
 
 (defun c-to-k (temp-c)
+  "Convert Celsius to Kelvin."
   (+ temp-c 273.15))
 
 (defun f-to-k (temp-f)
+  "Convert Fahrenheit to Kelvin."
   (c-to-k (f-to-c temp-f)))
 
 ;; end temperature-related stuff -----
@@ -537,7 +518,7 @@ optional third item (the label for the line). Example data:
   "Return a list of all the permutations of the input."
   ;; If the input is nil, there is only one permutation:
   ;; nil itself
-  (if (null bag) 
+  (if (null bag)
       '(())
       ;; Otherwise, take an element, e, out of the bag.
       ;; Generate all permutations of the remaining elements,
@@ -575,6 +556,10 @@ optional third item (the label for the line). Example data:
   (let ((letters "abcdefghijklmnopqrstuvwxyz"))
     (map-into (make-string length)
               (lambda () (char letters (random (length letters)))))))
+
+(defun string-to-keyword (str)
+  "Convert a string to a keyword symbol (e.g., \"hello\" -> :hello)."
+  (intern (string-upcase str) :keyword))
 
 ;;; Local Variables:
 ;;; mode: Lisp
